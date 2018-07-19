@@ -11,4 +11,4 @@ add_executable(RayTracingDemos
         main.cpp
         ppm.cpp
         ppm.h
-        stdafx.h)
+        stdafx.h object.h object.cpp)

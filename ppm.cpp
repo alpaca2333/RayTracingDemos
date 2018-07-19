@@ -9,4 +9,5 @@ int WriteRGBImg(const char* path, int nx, int ny, Color *pix)
         fout << pix[i][0] << "\t" << pix[i][1] << "\t" << pix[i][2] << "\n"; 
     }
     fout.flush();
+    return 0;
 }
