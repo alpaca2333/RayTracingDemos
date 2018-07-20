@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "ppm.h"
 #include "object.h"
+#include "common.h"
+
 using namespace std;
 
 
@@ -18,7 +20,7 @@ int RenderSky(int nx, int ny, Color* buffer, const char* filePath)
     float k = ((float) nx) / ny;
     Vector3 origin(0, 0, 0);
     Vector3 downLeft(-k, -k / 2, -k / 2);
-    Vector3 hv(k * 2, 0, 0), vv(0, k, 0);
+    Vector3 hv(k * 2, 0, 0), vv(0, 2, 0);
     int pi = 0;
     for (int j = ny - 1; j >= 0; --j)
     {
@@ -35,7 +37,7 @@ int RenderSky(int nx, int ny, Color* buffer, const char* filePath)
     return 0;
 }
 
-Color ColorBalls(const Ray& r, Hittables& h)
+Color ColorBalls(const Ray& r, Objects& h)
 {
     HitRecord rec;
     if (h.IsHit(r, 0, MAXFLOAT, rec))
@@ -50,33 +52,23 @@ Color ColorBalls(const Ray& r, Hittables& h)
 
 int RenderBalls(const char* filePath, int nx, int ny, Color *buffer)
 {
-    float k = ((float) nx) / ny;
-    Vector3 origin(0, 0, 0);
-    Vector3 downLeft(-k, -k / 2, -k / 2);
-    Vector3 hv(k * 2, 0, 0), vv(0, k, 0);
+    Camera camera(nx, ny, buffer);
     // generate balls
-    Hittables objects;
-    Hittable *sp1 = new Sphere(Vector3(0, 0, -1), 0.5);
-    Hittable *sp2 = new Sphere(Vector3(0, -100.5f, -1), 100);
+    Objects objects;
+    Object *sp1 = new Sphere(Vector3(0, 0, -1), 0.5);
+    Object *sp2 = new Sphere(Vector3(0, -100.5f, -1), 100);
     objects.Add(sp1);
     objects.Add(sp2);
-    int pi = 0;
-    for (int j = ny - 1; j >= 0; --j)
-    {
-        for (int i = 0; i < nx; ++i)
-        {
-            float u = (float) i / nx;
-            float v = (float) j / ny;
-            Ray r(origin, downLeft + u * hv + v * vv);
-            buffer[pi++] = ColorBalls(r, objects) * 255.99;
-        }
-    }
+    camera.SetColorHandler(ColorBalls);
+    camera.SetAntiAliasing(true);
+    camera.SetAaSamples(16);
+    camera.Render(objects);
     WriteRGBImg(filePath, nx, ny, buffer);
 }
 
 int main()
 {
-    const int nx = 800, ny = 400;
+    const int nx = 400, ny = 300;
     Color buffer[nx * ny];
     RenderBalls("/mnt/d/sky.ppm", nx, ny, buffer);
     return 0;

@@ -7,7 +7,7 @@
 #include "stdafx.h"
 #include "common.h"
 
-class Sphere : public Hittable
+class Sphere : public Object
 {
 public:
     Sphere() = default;
