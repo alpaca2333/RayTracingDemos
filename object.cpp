@@ -4,25 +4,24 @@
 
 #include "object.h"
 
-bool Sphere::IsHit(const Ray &r, float minT, float maxT, HitRecord &hitRec)
+bool Sphere::IsHit(const Ray &r, double minT, double maxT, HitRecord &hitRec)
 {
     Vector3 oc = r.Origin() - center;
-    float a = r.Direction().Dot(r.Direction());
-    float b = oc.Dot(r.Direction());
-    float c = oc.Dot(oc) - radius * radius;
-    float delta = b * b - a * c;
+    double a = r.Direction().Dot(r.Direction());
+    double b = oc.Dot(r.Direction());
+    double c = oc.Dot(oc) - radius * radius;
+    double delta = b * b - a * c;
     if (delta > 0)
     {
-        float root = static_cast<float>((-b - sqrt(delta)) / a);
-        if (minT <= root && root <= maxT)
-        {
+        double root = (-b - sqrt(delta)) / a;
+        if (minT + SURFACE_THICKNESS < root && root < maxT) {
             hitRec.t = root;
             hitRec.p = r.P(root);
             hitRec.normal = (hitRec.p - center).UnitVector();
             return true;
         }
-        root = static_cast<float>((-b + sqrt(delta)) / a);
-        if (minT <= root && root <= maxT)
+        root = (-b + sqrt(delta)) / a;
+        if (minT + SURFACE_THICKNESS < root && root < maxT)
         {
             hitRec.t = root;
             hitRec.p = r.P(root);

@@ -10,12 +10,11 @@
 class Sphere : public Object
 {
 public:
-    Sphere() = default;
-    Sphere(Vector3 center, float radius) : center(center), radius(radius) { }
-    bool IsHit(const Ray& r, float minT, float maxT, HitRecord& hitRec) override;
+    Sphere(Vector3 center, double radius, const Material& m) : center(center), radius(radius), Object(m) { }
+    bool IsHit(const Ray& r, double minT, double maxT, HitRecord& hitRec) override;
     Vector3 Center() { return center; }
-    float Radius() { return radius; }
+    double Radius() { return radius; }
 protected:
     Vector3 center;
-    float radius;
+    double radius;
 };
