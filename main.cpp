@@ -6,11 +6,18 @@
 
 using namespace std;
 
+Glass m{1};
+Sphere sun{{-1, 8, -5}, 3, m};
 
 Color ColorSky(const Ray& r)
 {
+    HitRecord hr;
+    if (sun.IsHit(r, 0, MAXFLOAT, hr))
+    {
+        return {1, 1, 1};
+    }
     Vector3 unitDir = r.Direction().UnitVector();
-    auto t = static_cast<double>(0.5 * (unitDir[1] + 1.0f));
+    auto t = 0.5 * (unitDir[1] + 1.0f);
     Vector3 result = {((1 - t) * Color(1, 1, 1) + t * Color(0.4, 0.6, 0.9))};
     return result;
 }
@@ -70,21 +77,21 @@ Color ColorBalls2(const Ray& r, Objects& os, int depth = 0)
 int RenderBalls(const char* filePath, int nx, int ny)
 {
     // Init camera
-    Vector3 lookFrom{-1.5, 1.5, 0.8};
+    Vector3 lookFrom{-5, 0.2, -5};
     Vector3 lookAt{0, 0, -1};
     double focus = (lookAt - lookFrom).Length();
     float aperture = 0.2;
-    Camera camera(lookFrom, lookAt, {0, 1, 0}, 90, aperture, focus,
+    Camera camera(lookFrom, lookAt, {0, 1, 0}, 20, aperture, focus,
                   nx, ny);
 
     // generate balls
     Objects objects;
-    Lambertian m1({0.3, 0.3, 0.8});
-    Lambertian m2({0.8, 0.8, 0.8});
+    Lambertian m1({0.6, 0.6, 0.8});
+    Lambertian m2({0.8, 0.5, 0.5});
     Metal m3({0.8, 0.6, 0.2});
-    Glass m4(1.3); Glass m5(1 / 1.9);
+    Glass m4(1.5); Glass m5(1 / 1.9);
     Object *sp1 = new Sphere({0, 0, -1}, 0.5, m4);
-    Object *sp2 = new Sphere({0, -100.5f, -1}, 100, m1);
+    Object *sp2 = new Sphere({0, -1000.5f, -1}, 1000, m1);
     Object *sp3 = new Sphere({1, 0, -1}, 0.5, m2);
     Object *sp4 = new Sphere({-1, 0, -1}, 0.5, m3);
     Object *sp5 = new Sphere({-1, 0, -1}, 0.45, m5);
@@ -92,7 +99,18 @@ int RenderBalls(const char* filePath, int nx, int ny)
     objects.Add(sp2);
     objects.Add(sp3);
     objects.Add(sp4);
-//    objects.Add(sp5);
+
+    for (int i = 0; i < 100; ++i)
+    {
+        Material *m = NULL;
+        double mrand = drand48();
+        if (0 <= mrand && mrand < 0.33) m = new Lambertian{{drand48(), drand48(), drand48()}};
+        else if (0.33 <= mrand && mrand < 0.66) m = new Glass(1 + drand48());
+        else m = new Metal({drand48(), drand48(), drand48()});
+        Object *tmp = new Sphere({drand48() * 10 - 5, -0.3, drand48() * 10 - 5}, 0.2, *m);
+        objects.Add(tmp);
+    }
+
     // configure camera
     camera.SetColorHandler(ColorBalls2);
     camera.SetAntiAliasing(true);
@@ -103,7 +121,7 @@ int RenderBalls(const char* filePath, int nx, int ny)
 
 int main()
 {
-    const int nx = 400, ny = 200;
-    RenderBalls("/home/qwertysun/balls.ppm", nx, ny);
+    const int nx = 1920, ny = 1080;
+    RenderBalls("/mnt/c/Users/qwertysun/Desktop/balls.ppm", nx, ny);
     return 0;
 }

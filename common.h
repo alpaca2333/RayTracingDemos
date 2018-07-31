@@ -51,9 +51,9 @@ class Ray
 public:
     Ray() = default;
     Ray(const Vector3& A, const Vector3& B) : A(A), B(B) { }
-    Ray(const Vector3& A, const Vector3& B, const Ray& r): Ray(A, B)
+    Ray(const Vector3& A, const Vector3& B, const Ray& previous): Ray(A, B)
     {
-        refracted = r.refracted;
+        refracted = previous.refracted;
     }
     Vector3 Origin() const { return A; }
     Vector3 Direction() const { return B; }
