@@ -1,3 +1,4 @@
 # 练手仓库
 
-以光纤追踪的角度讲的，本仓库用来写demo。
+吔屎啦雷
+![balls](https://github.com/alpaca2333/RayTracingDemos/raw/master/balls2.png)
