@@ -130,7 +130,7 @@ class PPM
 {
 public:
     PPM(int nx, int ny, const char* filePath);
-    void write(const Color& c);
+    void write(Color &c);
     ~PPM() { delete fout; }
 protected:
     const char* filePath;
@@ -157,7 +157,9 @@ protected:
     Vector3 u, v, w;
     Vector3 hv, vv;
     int nx, ny;
-    ColorHandler getColor;  // strategy of getting color through a ray
+    // the color handler will decide each pixel's color
+    // it is the most important method
+    ColorHandler getColor;
     float lensRadius;
 };
 

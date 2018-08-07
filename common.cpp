@@ -163,7 +163,17 @@ PPM::PPM(int nx, int ny, const char *filePath) : filePath(filePath)
     *fout << "P3\n" << nx << " " << ny << "\n255\n";
 }
 
-void PPM::write(const Color &pix)
+void PPM::write(Color &pix)
 {
+
+    double max = pix.e[0];
+    max = max < pix.e[1] ? pix.e[1] : max;
+    max = max < pix.e[2] ? pix.e[2] : max;
+    if (max > 255.99)
+    {
+        pix.e[0] /= max / 255.99;
+        pix.e[1] /= max / 255.99;
+        pix.e[2] /= max / 255.99;
+    }
     *fout << (int) pix.e[0] << "\t" << (int) pix.e[1] << "\t" << (int) pix.e[2] << "\n";
 }

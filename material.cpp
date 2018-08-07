@@ -34,7 +34,7 @@ bool Glass::Scatter(const Ray &r, HitRecord &hr) const
     Ray sr(hr.p, dir1, r);
     sr.refracted = true;
     hr.scatterInfos.push_back({
-        fromOut ? Color{0.8, 0.8, 0.8} : Color{1, 1, 1},
+        {1, 1, 1},
         sr
     });
 
