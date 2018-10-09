@@ -2,10 +2,20 @@
 
 #include "stdafx.h"
 
+#define SURFACE_THICKNESS 0.00000001
+
 class Color;
 class Vector3;
 class Material;
 class HitRecord;
+
+//#define synchronized(m) \
+//    for(std::unique_lock<std::recursive_mutex> lk(m); lk; lk.unlock())
+
+static int __mutexIndex__ = 0;
+#define synchronized std::recursive_mutex _m_##__mutexIndex__;\
+    ++__mutexIndex__;\
+    for (std::unique_lock<std::recursive_mutex> lk(_m_##__mutexIndex__); lk; lk.unlock())
 /**
  * Common 3-d vector definition
  */
@@ -37,8 +47,6 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Vector3& v);
 };
 
-
-
 Vector3 RandomUnitVector();
 
 /*
@@ -64,6 +72,10 @@ protected:
     Vector3 A, B;
 };
 
+/*
+ * I'm wondering if the definition of Color is meaningful...
+ * Maybe a typedef is enough :(
+ */
 class Color : public Vector3
 {
 public:
@@ -80,7 +92,7 @@ struct ScatterInfo
 
 
 /**
- * stores information about at which point a ray hits
+ * Stores information about at which point a ray hits
  * an object and what the t-param is in the ray.
  */
 struct HitRecord
@@ -94,12 +106,17 @@ struct HitRecord
     std::vector<ScatterInfo> scatterInfos;
 };
 
+/*
+ * Base definition of material.
+ * Concrete definitions of materials should be put in 'material.h'
+ */
 class Material
 {
 public:
     virtual bool Scatter(
             const Ray &r, HitRecord &hr) const { hr.scatterInfos = {}; };
 };
+
 /**
  * common object definition.
  */
@@ -123,18 +140,49 @@ protected:
     std::vector<Object*> objects;
 };
 
-
+/*
+ * A color handler is directly called by camera's render function.
+ * It decides the color of each tracing ray.
+ */
 typedef std::function<Color(const Ray&, Objects&, int)> ColorHandler;
 
+// PPM writer
 class PPM
 {
 public:
     PPM(int nx, int ny, const char* filePath);
-    void write(Color &c);
+    // Could change the value of color if rgb values exceed 255
+    void Write(Color &c);
     ~PPM() { delete fout; }
 protected:
     const char* filePath;
     std::ofstream *fout;
+};
+
+/* All Write operations are done in memory first.
+ * Call WriteToFile() to save changes to file.
+ * Being add to support multi-thread rendering.
+ */
+class CachedPPM
+{
+public:
+    CachedPPM(int nx, int ny, const char* filePath);
+
+    void WriteToFile();
+
+    /* not thread-safe */
+    void Write(int x, int y, const Color &c);
+
+    inline double Progress() { return sum / ((double) nx * ny); }
+
+    inline void ClearProgress() { sum = 0; }
+
+    ~CachedPPM() { delete colorCache; }
+private:
+    int nx, ny;
+    const char* filePath;
+    Color* colorCache;
+    int sum;
 };
 
 class Camera
@@ -145,9 +193,11 @@ public:
            int nx, int ny);
     Ray GetRay(double u, double v);
     void SetAntiAliasing(bool aa) { antiAliasing = aa; }
+
+    /* Set number of samples for each pixel the camera would take when rendering */
     void SetAaSamples(int samples) { aaSamples = samples; }
     void SetColorHandler(const ColorHandler& handler) { getColor = handler; }
-    void Render(PPM& ppm, Objects& objects);
+    void Render(CachedPPM& ppm, Objects& objects);
     void LogProgress(double percent);
 protected:
     bool antiAliasing = true;
@@ -162,9 +212,6 @@ protected:
     ColorHandler getColor;
     float lensRadius;
 };
-
-
-#define SURFACE_THICKNESS 0.00000001
 
 
 //=========================== inline functions definitions ==============================
@@ -292,7 +339,7 @@ bool Vector3::Parallel(const Vector3 &v) const
     {
         if (e[i])
         {
-            if (k && (k - v.e[i] / e[i]) > 0.00000000001)
+            if (k && (k - v.e[i] / e[i]) > SURFACE_THICKNESS)
             {
                 return false;
             }

@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/RayTracingDemos.dir/common.cpp.o CMakeFiles/RayTracingDemos.dir/main.cpp.o CMakeFiles/RayTracingDemos.dir/ppm.cpp.o CMakeFiles/RayTracingDemos.dir/object.cpp.o  -o RayTracingDemos 

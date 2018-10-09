@@ -1,3 +1,11 @@
+/*
+ * Ray tracing demo.
+ *
+ * @author  qwerty sun
+ * @date    2018-07-19
+ */
+
+
 #include "stdafx.h"
 #include "ppm.h"
 #include "object.h"
@@ -74,7 +82,7 @@ Color ColorBalls2(const Ray& r, Objects& os, int depth = 0)
 }
 
 
-int RenderBalls(const char* filePath, int nx, int ny)
+int DrawBalls(const char *filePath, int nx, int ny)
 {
     // Init camera
     Vector3 lookFrom{-5, 0.2, -5};
@@ -115,13 +123,13 @@ int RenderBalls(const char* filePath, int nx, int ny)
     camera.SetColorHandler(ColorBalls2);
     camera.SetAntiAliasing(true);
     camera.SetAaSamples(100);
-    PPM ppm(nx, ny, filePath);
+    CachedPPM ppm(nx, ny, filePath);
     camera.Render(ppm, objects);
 }
 
 int main()
 {
     const int nx = 1920, ny = 1080;
-    RenderBalls("/mnt/c/Users/qwertysun/Desktop/balls.ppm", nx, ny);
+    DrawBalls("/mnt/c/Users/qwertysun/Desktop/balls.ppm", nx, ny);
     return 0;
 }

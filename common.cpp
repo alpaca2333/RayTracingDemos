@@ -77,10 +77,12 @@ Vector3 vsqrt(const Vector3& v)
     return {sqrt(v.e[0]), sqrt(v.e[1]), sqrt(v.e[2])};
 }
 
-void Camera::Render(PPM& ppm, Objects& objects)
+void Camera::Render(CachedPPM& ppm, Objects& objects)
 {
     int samples = antiAliasing ? this->aaSamples : 1;
     int pi = 0;
+
+    #pragma omp parallel for schedule(dynamic)
     for (int j = ny - 1; j >= 0; --j)
     {
         for (int i = 0; i < nx; ++i)
@@ -98,11 +100,14 @@ void Camera::Render(PPM& ppm, Objects& objects)
                 tmp += vsqrt(getColor(r, objects, 0)) * 255.99;
             }
             tmp /= samples;
-            ppm.write(tmp);
+            ppm.Write(i, j, tmp);
             pi++;
-            LogProgress(((double) (ny - j - 1) * nx + i) / (nx * ny));
+            LogProgress(ppm.Progress());
         }
     }
+
+    // render finished
+    ppm.WriteToFile();
 }
 
 void Camera::LogProgress(double percent)
@@ -163,7 +168,7 @@ PPM::PPM(int nx, int ny, const char *filePath) : filePath(filePath)
     *fout << "P3\n" << nx << " " << ny << "\n255\n";
 }
 
-void PPM::write(Color &pix)
+void PPM::Write(Color &pix)
 {
 
     double max = pix.e[0];
@@ -176,4 +181,47 @@ void PPM::write(Color &pix)
         pix.e[2] /= max / 255.99;
     }
     *fout << (int) pix.e[0] << "\t" << (int) pix.e[1] << "\t" << (int) pix.e[2] << "\n";
+}
+
+CachedPPM::CachedPPM(int nx, int ny, const char *filePath)
+{
+    this->nx = nx;
+    this->ny = ny;
+    this->filePath = filePath;
+    colorCache = new Color[nx * ny];
+    sum = 0;
+}
+
+#define max(a, b) (a > b ? a : b)
+void CachedPPM::Write(int x, int y, const Color &c)
+{
+    int offset = y * nx + x;
+    colorCache[offset] = c;
+    double max = max(c.e[0], c.e[1]);
+    max = max(max, c.e[2]);
+    if (max > 255.99)
+    {
+        colorCache[offset] /= max / 255.99;
+    }
+    recursive_mutex _m;
+    synchronized {
+        ++this->sum;
+    }
+}
+
+void CachedPPM::WriteToFile()
+{
+    ofstream fout(filePath);
+    fout << "P3\n" << nx << " " << ny << "\n255\n";
+
+    for (int j = 0; j < ny; ++j)
+    {
+        for (int i = 0; i < nx; ++i)
+        {
+            int offset = j * nx + i;
+            fout << (int) colorCache[offset].e[0] << "\t"
+                 << (int) colorCache[offset].e[1] << "\t"
+                 << (int) colorCache[offset].e[2] << "\n";
+        }
+    }
 }

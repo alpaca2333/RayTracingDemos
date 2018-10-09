@@ -1,3 +1,0 @@
-/mnt/c/Users/qwertysun/Desktop/RayTracingDemos/build/CMakeFiles/rebuild_cache.dir
-/mnt/c/Users/qwertysun/Desktop/RayTracingDemos/build/CMakeFiles/RayTracingDemos.dir
-/mnt/c/Users/qwertysun/Desktop/RayTracingDemos/build/CMakeFiles/edit_cache.dir
