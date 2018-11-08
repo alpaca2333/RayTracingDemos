@@ -11,8 +11,8 @@ bool Lambertian::Scatter(const Ray &r, HitRecord &hr) const
 {
     Vector3 dir = hr.normal + RandomUnitVector();
     hr.scatterInfos.push_back({
-                                      attenuation,
-                                      Ray(hr.p, dir)
+                                attenuation,
+                                Ray(hr.p, dir)
                               });
     return true;
 }

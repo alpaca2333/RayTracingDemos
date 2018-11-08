@@ -9,6 +9,8 @@ class Vector3;
 class Material;
 class HitRecord;
 
+extern double drand48(void);
+
 //#define synchronized(m) \
 //    for(std::unique_lock<std::recursive_mutex> lk(m); lk; lk.unlock())
 
@@ -214,9 +216,7 @@ protected:
 };
 
 
-//=========================== inline functions definitions ==============================
-
-
+//=========================== inline function definitions ==============================
 
 inline double Dot(const Vector3 &vec1, const Vector3 &vec2)
 {

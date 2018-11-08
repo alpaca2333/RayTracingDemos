@@ -2,7 +2,6 @@
 
 using namespace std;
 
-
 Vector3 RandomUnitVector()
 {
     Vector3 p;
